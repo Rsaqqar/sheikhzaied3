@@ -1,0 +1,1409 @@
+# لعبة «الكنز المفقود | THE LOST TREASURE»
+
+ملف HTML واحد يعمل مباشرة عند فتحه في المتصفح، دون خادم أو مكتبات خارجية. بنك الأسئلة مستخرج من الوحدة الثالثة في الكتاب المرفق (**الفكر الاتحادي عند الشيخ زايد**، الصف العاشر)، ولم أضف أي معلومة تاريخية أو رقمية غير واردة فيه.
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>الكنز المفقود | THE LOST TREASURE</title>
+<style>
+:root{
+  --gold:#d4a017; --gold-l:#ffd966; --brown:#3b2412; --brown-l:#8b5e2b;
+  --navy:#0b3d5c; --navy-d:#061c2b; --green:#2e7d5b; --blue:#2c7aa3;
+  --red:#b23a3a; --parch:#fbf1d6; --parch-d:#ecd9a6; --ink:#3b2412;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Tahoma,"Segoe UI",Arial,sans-serif; color:var(--ink); font-size:17px; line-height:1.75;
+  min-height:100vh;
+  background:radial-gradient(circle at 15% 0%,#1b6b8f 0%,var(--navy) 45%,var(--navy-d) 100%) fixed;
+}
+.hidden{display:none!important}
+.screen{display:none;padding:18px 14px 50px;max-width:1000px;margin:0 auto;animation:fadeIn .45s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1,h2,h3{margin:.3em 0;line-height:1.35}
+.title{font-size:clamp(2.4rem,7vw,4.2rem);margin:0;color:var(--gold-l);text-shadow:0 3px 0 #7a4e10,0 0 24px rgba(255,217,102,.35)}
+.subtitle{letter-spacing:4px;color:#f6e7bd;font-weight:700;direction:ltr}
+.slogan{font-size:1.25rem;color:#ffe9a8;font-weight:700;margin:12px 0 4px}
+.center{text-align:center}
+.card{background:linear-gradient(var(--parch),var(--parch-d));color:var(--ink);border:3px solid var(--brown-l);border-radius:18px;padding:18px 20px;box-shadow:0 8px 22px rgba(0,0,0,.35),inset 0 0 40px rgba(139,94,43,.15);margin:14px 0}
+.card.narrow{max-width:620px;margin:20px auto}
+.card.wide{max-width:1100px;margin:10px auto}
+.start-wrap{text-align:center;padding-top:10px}
+.emblem{font-size:4.5rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+.teacher-card{display:inline-block;text-align:right;background:rgba(255,255,255,.08);border:2px solid var(--gold);border-radius:14px;padding:10px 18px;color:#f6e7bd;margin:14px 0}
+.teacher-card div{margin:2px 0}
+.story-box{max-width:760px;margin:16px auto;color:#f6e7bd;background:rgba(0,0,0,.25);border-radius:16px;padding:14px 18px;border:1px dashed var(--gold);line-height:2}
+.btn{font-family:inherit;font-size:1.05rem;font-weight:700;border:0;border-radius:14px;padding:.7rem 1.3rem;min-height:48px;cursor:pointer;transition:transform .15s,box-shadow .15s,opacity .2s;box-shadow:0 4px 0 rgba(0,0,0,.3);color:#fff}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-gold{background:linear-gradient(#ffd966,#c98f12);color:#3b2412}
+.btn-blue{background:linear-gradient(#2c7aa3,#16445e)}
+.btn-green{background:linear-gradient(#3ea57a,#21593f)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#f6e7bd;border:2px solid var(--gold);box-shadow:none}
+.card .btn-ghost,.modal-box .btn-ghost{background:#fff7e0;color:var(--brown)}
+.big{font-size:1.3rem;padding:.9rem 2rem}
+.small{font-size:.92rem;padding:.4rem .9rem;min-height:40px}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:16px}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+label{display:block;margin:12px 0 6px;font-weight:700}
+input,select{font-family:inherit;font-size:1.05rem;padding:.65rem .9rem;border-radius:12px;border:2px solid var(--brown-l);width:100%;background:#fffaf0;color:var(--ink)}
+.err{color:var(--red);font-weight:700;min-height:1.6em;margin-top:8px}
+.note{color:#cfe8f5;font-size:.92rem;text-align:center;margin-top:18px}
+.small-txt{font-size:.92rem;color:#5a4120}
+ol.steps,ul.steps{padding-right:22px;line-height:2}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:50;background:rgba(6,28,43,.94);border-bottom:3px solid var(--gold);display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;color:#f6e7bd}
+.hud .hi{background:rgba(255,255,255,.08);border-radius:10px;padding:4px 10px;font-weight:700;white-space:nowrap;font-size:.95rem}
+.hud .bar{flex:1 1 160px;min-width:120px;height:14px;background:#0a2a3d;border-radius:8px;overflow:hidden;border:1px solid var(--gold)}
+.hud .bar div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold-l));transition:width .6s}
+
+/* Map */
+.map-head{text-align:center;color:#f6e7bd}
+.board{position:relative;width:100%;aspect-ratio:16/10;border-radius:18px;border:8px double var(--brown-l);background:radial-gradient(ellipse at center,#f8ebc2 0%,#e3c98e 70%,#c9a466 100%);box-shadow:inset 0 0 60px rgba(90,55,20,.45),0 10px 30px rgba(0,0,0,.4);overflow:hidden;margin-top:10px}
+.route{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.route polyline{fill:none;stroke:#7a4e1d;stroke-width:3px;stroke-dasharray:8 6;vector-effect:non-scaling-stroke}
+.deco{position:absolute;font-size:1.8rem;opacity:.85;pointer-events:none;transform:translate(-50%,-50%)}
+.node{position:absolute;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:4px solid var(--brown-l);background:radial-gradient(#fff9e6,#e8cf8e);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(0,0,0,.35);z-index:2;padding:0;font-family:inherit;font-size:1.9rem;color:var(--ink)}
+.node-ic{pointer-events:none}
+.node-lbl{position:absolute;top:82px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(59,36,18,.9);color:#f6e7bd;padding:2px 10px;border-radius:10px;font-size:.88rem;font-weight:700;pointer-events:none}
+.node.avail{border-color:var(--gold-l);animation:pulse 1.6s infinite}
+.node.done{border-color:var(--green);background:radial-gradient(#d9f5e6,#7fd1a6);font-size:1.6rem;color:var(--green);font-weight:800}
+.node.locked{filter:grayscale(1);opacity:.6;cursor:not-allowed}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,217,102,.8)}50%{box-shadow:0 0 0 16px rgba(255,217,102,0)}}
+.explorer{position:absolute;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;background:#fff8e5;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 4px 10px rgba(0,0,0,.4);transition:left .7s ease,top .7s ease;z-index:3;pointer-events:none}
+.map-msg{text-align:center;color:#f6e7bd;font-weight:700;margin-top:10px}
+
+/* Stage */
+.stage-head{border-color:var(--gold)}
+.stage-title{font-size:1.5rem;font-weight:800;color:var(--brown)}
+.stage-place{font-weight:700;color:#7a4e1d}
+#s-stage.final .stage-head{background:linear-gradient(#fff3c4,#e8c25a);border-color:#8b5e2b}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:0 10px;border-radius:12px;background:#fff7e0;border:2px solid #b8893b;font-weight:800}
+.chip.done{background:#bfe8cf;border-color:var(--green);color:#17573b}
+.chip.cur{background:var(--gold-l);border-color:var(--brown-l);box-shadow:0 0 0 3px rgba(255,217,102,.5)}
+.q-meta{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--brown);color:#f6e7bd;border-radius:999px;padding:2px 12px;font-size:.85rem}
+.tag.clue{background:var(--green)}
+.q-text{font-size:1.2rem;font-weight:700;margin:10px 0 12px;line-height:1.95}
+.passage{background:#fff8e6;border-right:6px solid var(--gold);padding:12px 16px;border-radius:12px;margin:10px 0;line-height:2.1}
+.table-box{overflow:auto;margin:10px 0}
+table.mini{border-collapse:collapse;width:100%;background:#fffaf0;border-radius:10px;overflow:hidden}
+table.mini th,table.mini td{border:1px solid #d9bd80;padding:8px 10px;text-align:right}
+table.mini th{background:var(--brown);color:#f6e7bd}
+.opts{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:640px){.opts{grid-template-columns:1fr 1fr}}
+.opt{font-family:inherit;font-size:1.05rem;text-align:right;padding:12px 16px;border-radius:12px;border:2px solid var(--brown-l);background:#fffaf0;cursor:pointer;min-height:56px;color:var(--ink);transition:background .15s}
+.opt:hover:not(:disabled){background:#ffeebb}
+.opt.right{background:#bfe8cf;border-color:var(--green)}
+.opt.wrong{background:#f5c6c6;border-color:var(--red);text-decoration:line-through}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;padding:10px 14px;border-radius:12px;font-weight:700;display:none}
+.feedback.show{display:block}
+.feedback.good{background:#d9f5e6;color:#17573b;border:2px solid var(--green)}
+.feedback.bad{background:#fbe0e0;color:#7a1d1d;border:2px solid var(--red)}
+.feedback.hint{background:#fff3c4;color:#5a4100;border:2px solid var(--gold)}
+.hint-line{font-size:.95rem;color:#5a4120;margin:6px 0}
+.q-actions{margin-top:14px;display:flex;justify-content:flex-start}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+/* Drag & drop */
+.chip-item{display:inline-block;background:#fff;border:2px solid #b8893b;border-radius:12px;padding:8px 14px;margin:4px;cursor:grab;font-weight:700;user-select:none;min-height:44px}
+.chip-item.selected{background:var(--gold-l);border-color:var(--brown-l);box-shadow:0 0 0 3px rgba(255,217,102,.6)}
+.zones{display:grid;gap:10px;grid-template-columns:1fr;margin-top:10px}
+@media(min-width:700px){.zones{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}}
+.zone{border:2px dashed var(--brown-l);border-radius:14px;padding:12px;background:#fff8e6;min-height:110px;cursor:pointer;transition:background .15s}
+.zone.over{background:#ffeebb;border-style:solid}
+.zone-text{font-weight:700;margin-bottom:6px}
+.zone-item{background:#bfe8cf;border-radius:10px;padding:6px 10px;margin:4px 0;font-weight:700}
+.zone-slot{color:#9a7a48;font-size:.9rem}
+.seq-item{background:#fff;border-radius:10px;padding:8px 12px;margin:6px 0;border-right:5px solid var(--green);font-weight:700}
+
+/* Map challenge */
+.umap{width:100%;max-width:560px;display:block;margin:10px auto;border-radius:12px;border:3px solid var(--brown-l);cursor:crosshair}
+.dot{cursor:pointer}
+.dot.hit .dotc{fill:var(--green)}
+.dot.miss .dotc{fill:#555}
+
+/* Code lock */
+.lock-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-top:12px}
+.lock{font-size:3.6rem;transition:transform .35s}
+.lock.open{transform:rotate(-15deg) scale(1.1)}
+.code-input{width:220px;text-align:center;font-size:1.6rem;letter-spacing:6px;font-weight:700}
+
+/* Modal & toast */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:100}
+.modal.show{display:flex;animation:fadeIn .3s}
+.modal-box{background:linear-gradient(var(--parch),var(--parch-d));border:4px solid var(--gold);border-radius:20px;max-width:580px;width:100%;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.5);color:var(--ink)}
+.modal-box h3{font-size:1.4rem;margin-top:0}
+.rewards{padding-right:20px;font-weight:700}
+.clue-note{background:#d9f5e6;border-radius:10px;padding:8px 12px;font-weight:700;color:#17573b}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,160px);background:var(--brown);color:#fff7e0;border:2px solid var(--gold);padding:12px 20px;border-radius:14px;z-index:150;transition:transform .35s;max-width:92vw;text-align:center;font-weight:700}
+.toast.show{transform:translate(-50%,0)}
+
+/* Victory */
+.victory{text-align:center;padding:10px}
+.chest{position:relative;width:220px;height:170px;margin:20px auto 10px}
+.chest-body{position:absolute;bottom:0;left:0;right:0;height:110px;background:linear-gradient(#9a6431,#4e2f12);border:4px solid var(--gold);border-radius:12px;z-index:2}
+.chest-gold{position:absolute;top:24px;left:50%;width:170px;height:70px;transform:translateX(-50%) scale(0);background:radial-gradient(#fff9c4,#ffd966 45%,transparent 70%);transition:transform .8s .7s;z-index:1}
+.chest-lid{position:absolute;top:50px;left:0;right:0;height:62px;background:linear-gradient(#b87a3d,#6b3f18);border:4px solid var(--gold);border-radius:70px 70px 8px 8px;transition:transform 1.2s ease;z-index:3}
+.chest.open .chest-lid{transform:translateY(-70px) rotate(-14deg)}
+.chest.open .chest-gold{transform:translateX(-50%) scale(1)}
+.confetti-box{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:200}
+.cf{position:absolute;top:-30px;width:10px;height:14px;border-radius:2px;animation-name:cfall;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* Results */
+.results{text-align:center}
+.score-ring{width:160px;height:160px;border-radius:50%;margin:6px auto 10px;background:conic-gradient(var(--gold) calc(var(--p,0)*1%),#e8d7b0 0);display:flex;flex-direction:column;align-items:center;justify-content:center;border:6px solid var(--brown-l)}
+.score-ring span{font-size:2.6rem;font-weight:800;line-height:1;background:var(--parch);border-radius:50%;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:14px 0}
+.stat{background:#fff8e6;border:2px solid var(--gold);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:1.25rem}
+.badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.badge{border:2px solid var(--gold);border-radius:14px;padding:8px 12px;background:#fff8e6;min-width:160px}
+.badge.off{opacity:.4;filter:grayscale(1)}
+.skill-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed #b8893b;padding:6px 0;flex-wrap:wrap}
+.lv{font-weight:700;padding:0 10px;border-radius:999px}
+.lv-ok{background:#bfe8cf;color:#17573b}
+.lv-mid{background:#fff0b3;color:#5a4100}
+.lv-low{background:#f5c6c6;color:#7a1d1d}
+.rec{text-align:right;line-height:2}
+
+/* Teacher */
+.t-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.table-wrap{overflow:auto;border-radius:12px;border:2px solid var(--brown-l);background:#fffaf0;max-height:70vh}
+table.report{border-collapse:collapse;width:100%;min-width:980px;font-size:.93rem}
+table.report th,table.report td{padding:8px 10px;border-bottom:1px solid #e0c99a;text-align:right;vertical-align:top}
+table.report th{background:var(--brown);color:#f6e7bd;position:sticky;top:0}
+
+/* Certificate */
+.cert{background:radial-gradient(circle,#fffbea,#f5e6bf);color:#3b2412;width:100%;max-width:794px;min-height:600px;margin:0 auto;padding:40px 36px;border:14px double #b8860b;outline:3px solid #3b2412;outline-offset:-30px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.cert-logo{font-size:3.2rem}
+.cert-title{font-size:clamp(1.4rem,4vw,2.1rem);font-weight:800;color:#8b5e2b;margin:6px 0}
+.cert-name{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;border-bottom:3px solid #d4a017;padding:0 24px;margin:18px 0}
+.cert-row{font-size:1.15rem;margin:6px 0}
+.cert-sign{display:flex;justify-content:space-around;width:100%;margin-top:40px;font-weight:700;flex-wrap:wrap;gap:10px}
+
+/* Print */
+@page{size:A4 portrait;margin:0}
+@media print{
+  body{background:#fff!important}
+  body *{visibility:hidden}
+  #cert,#cert *{visibility:visible}
+  #cert{position:absolute;left:0;top:0;width:190mm;height:277mm;max-width:none;min-height:0;margin:0;padding:12mm;box-sizing:border-box;border-width:10px;outline:none}
+  .no-print,.hud,.toast,.modal{display:none!important}
+}
+@media(max-width:640px){
+  body{font-size:16px}
+  .node{width:58px;height:58px;font-size:1.4rem}
+  .node-lbl{top:62px;font-size:.75rem;padding:1px 6px}
+  .explorer{width:42px;height:42px;font-size:1.5rem}
+  .title{font-size:2.3rem}
+  .card{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div id="confetti" class="confetti-box"></div>
+
+<!-- شريط المعلومات -->
+<header id="hud" class="hud hidden">
+  <div class="hi">⭐ النقاط: <span id="hudScore">0</span></div>
+  <div class="hi">🗝️ المفاتيح: <span id="hudKeys">0/4</span></div>
+  <div class="hi">🧩 أجزاء الخريطة: <span id="hudFrag">0/4</span></div>
+  <div class="hi">🔎 الأدلة: <span id="hudClues">0/6</span></div>
+  <div class="bar"><div id="hudBar"></div></div>
+  <div class="hi"><span id="hudPct">0%</span></div>
+  <button class="btn btn-ghost small sndBtn" type="button">🔊</button>
+  <button id="btnMapHud" class="btn btn-ghost small" type="button">🗺️ الخريطة</button>
+</header>
+
+<!-- 1. شاشة البداية -->
+<section id="s-start" class="screen active">
+  <div class="start-wrap">
+    <div class="emblem">🗺️</div>
+    <h1 class="title">الكنز المفقود</h1>
+    <div class="subtitle">THE LOST TREASURE</div>
+    <p class="slogan">«رحلتك تبدأ بالخريطة، وكنزك ينتظرك في نهاية المغامرة».</p>
+    <div class="story-box">
+      عُثر على خريطة قديمة تقود إلى كنز معرفي مفقود، لكن الطريق إليه مغلق بأربعة أختام سرية.
+      لن يتمكن المستكشف من الوصول إلى الكنز إلا إذا حل الألغاز، وقرأ الأدلة، واستخدم مهاراته في فهم الخرائط وتحليل المعلومات التاريخية والجغرافية.
+      هل أنت مستعد لخوض المغامرة؟
+    </div>
+    <div class="teacher-card">
+      <div><b>المادة:</b> الدراسات الاجتماعية</div>
+      <div><b>اسم المعلم:</b> رائد السقار</div>
+      <div><b>المدرسة:</b> مدرسة محمد بن راشد الحلقة الثانية والثالثة</div>
+    </div>
+    <div class="btn-row">
+      <button id="btnStart" class="btn btn-gold big" type="button">ابدأ المغامرة</button>
+      <button id="btnResume" class="btn btn-blue hidden" type="button">متابعة المغامرة المحفوظة</button>
+      <button id="btnTeacher" class="btn btn-ghost" type="button">📋 لوحة المعلم</button>
+      <button class="btn btn-ghost sndBtn" type="button">🔊</button>
+    </div>
+    <p class="note">تعمل اللعبة دون اتصال بالإنترنت، والنتائج محفوظة محليًا على هذا الجهاز.</p>
+  </div>
+</section>
+
+<!-- 2. شاشة تسجيل الطالب واختيار الصف -->
+<section id="s-setup" class="screen">
+  <div class="card narrow">
+    <h2>🧭 تسجيل المستكشف</h2>
+    <label for="inName">الاسم الكامل للطالب</label>
+    <input id="inName" maxlength="40" placeholder="اكتب اسمك الكامل" autocomplete="off" />
+    <label for="inGrade">الصف الدراسي</label>
+    <select id="inGrade">
+      <option value="">— اختر الصف —</option>
+    </select>
+    <div id="setupErr" class="err"></div>
+    <div class="btn-row">
+      <button id="btnSetupBack" class="btn btn-ghost" type="button">رجوع</button>
+      <button id="btnSetupNext" class="btn btn-gold" type="button">متابعة</button>
+    </div>
+    <p class="small-txt">ملاحظة للمعلم: بنك الأسئلة الحالي مستخرج من وحدة «الفكر الاتحادي عند الشيخ زايد» للصف العاشر. للصفوف الأخرى أضف بنكًا خاصًا بها في مصفوفة STAGES داخل الكود.</p>
+  </div>
+</section>
+
+<!-- 3. شاشة التعليمات -->
+<section id="s-instr" class="screen">
+  <div class="card">
+    <h2>📜 تعليمات المغامرة</h2>
+    <ul class="steps">
+      <li><b>الهدف:</b> جمع الأختام الأربعة وأجزاء الخريطة الأربعة لفتح الصندوق الأخير.</li>
+      <li><b>التنقل:</b> انقر على المرحلة المضيئة لتنتقل إليها. لا تُفتح المرحلة التالية إلا بعد اجتياز السابقة.</li>
+      <li><b>التحديات:</b> اختيار من متعدد، وصح أو خطأ، وسحب المفهوم إلى مكانه الصحيح (أو النقر عليه ثم على المكان)، وترتيب الأحداث، وتحديد الموقع على الخريطة، وفك الأقفال بالرمز الصحيح.</li>
+      <li><b>الخطأ لا يُقصيك:</b> يمكنك إعادة المحاولة دائمًا، ويظهر لك سبب الخطأ وتلميح تعليمي.</li>
+      <li><b>النقاط:</b> 10 نقاط لكل تحدٍّ من أول محاولة، وتقل مع كل خطأ (لا تقل عن 2). التلميح يخصم 2 نقطة، وكل دليل مكتشف يمنح 3 نقاط إضافية.</li>
+      <li><b>الشارات:</b> المستكشف المبتدئ، وخبير الخرائط، ومحلل الأدلة، وبطل الكنز.</li>
+      <li><b>الحفظ:</b> تُحفظ مغامرتك تلقائيًا على هذا الجهاز، ويمكنك متابعتها من الشاشة الرئيسية.</li>
+    </ul>
+    <div class="btn-row">
+      <button id="btnInstrBack" class="btn btn-ghost" type="button">رجوع</button>
+      <button id="btnGo" class="btn btn-gold big" type="button">انطلق إلى الخريطة 🗺️</button>
+    </div>
+  </div>
+</section>
+
+<!-- 4. شاشة الخريطة الرئيسية -->
+<section id="s-map" class="screen">
+  <div class="map-head">
+    <h2>🗺️ خريطة الكنز المفقود</h2>
+    <p id="mapMsg" class="map-msg"></p>
+  </div>
+  <div class="board" id="board">
+    <svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <polyline points="82,80 60,56 34,70 24,36 60,14"></polyline>
+    </svg>
+  </div>
+  <div class="btn-row">
+    <button id="btnNext" class="btn btn-gold" type="button">ابدأ المرحلة التالية</button>
+    <button id="btnRestart" class="btn btn-ghost" type="button">🔄 إعادة اللعب</button>
+  </div>
+</section>
+
+<!-- 5. شاشة المرحلة (وتتكرر للمراحل والكنز النهائي) -->
+<section id="s-stage" class="screen">
+  <div class="card stage-head">
+    <div class="stage-title" id="stTitle"></div>
+    <div class="stage-place" id="stPlace"></div>
+    <p id="stStory"></p>
+    <div class="chips" id="stChips"></div>
+  </div>
+  <div class="card" id="chArea"></div>
+  <div class="btn-row">
+    <button id="btnLeaveStage" class="btn btn-ghost" type="button">🗺️ العودة إلى الخريطة</button>
+  </div>
+</section>
+
+<!-- 6. شاشة فتح الكنز -->
+<section id="s-victory" class="screen">
+  <div class="victory">
+    <div class="chest" id="chest">
+      <div class="chest-gold"></div>
+      <div class="chest-body"></div>
+      <div class="chest-lid"></div>
+    </div>
+    <h2>🏆 لقد وجدت الكنز المفقود!</h2>
+    <p id="vText" class="card" style="display:inline-block;max-width:640px"></p>
+    <div class="btn-row">
+      <button id="btnVResults" class="btn btn-gold" type="button">📊 عرض النتائج والتقييم</button>
+      <button id="btnVCert" class="btn btn-green" type="button">🎓 شهادة الإنجاز</button>
+    </div>
+  </div>
+</section>
+
+<!-- 7. شاشة النتائج -->
+<section id="s-results" class="screen">
+  <div class="card results">
+    <div class="score-ring" id="rRing"><span id="rScore">0</span></div>
+    <div style="font-weight:800;color:#7a4e1d">من 100 نقطة</div>
+    <h2 id="rName"></h2>
+    <div class="stats" id="rStats"></div>
+    <h3>🏅 الشارات</h3>
+    <div class="badges" id="rBadges"></div>
+    <h3>🎯 المهارات</h3>
+    <div id="rSkills" style="max-width:560px;margin:0 auto;text-align:right"></div>
+    <h3>💬 التوصية التعليمية</h3>
+    <div class="card rec" id="rRec"></div>
+    <div class="btn-row">
+      <button id="rCert" class="btn btn-green" type="button">🎓 الشهادة</button>
+      <button id="rTeacher" class="btn btn-blue" type="button">📋 لوحة المعلم</button>
+      <button id="rReplay" class="btn btn-gold" type="button">🔄 إعادة اللعب</button>
+      <button id="rStart" class="btn btn-ghost" type="button">الشاشة الرئيسية</button>
+    </div>
+  </div>
+</section>
+
+<!-- 8. شهادة الإنجاز -->
+<section id="s-cert" class="screen">
+  <div class="btn-row no-print">
+    <button id="btnPrint" class="btn btn-gold" type="button">🖨️ طباعة الشهادة (A4)</button>
+    <button id="btnCertBack" class="btn btn-ghost" type="button">رجوع</button>
+  </div>
+  <div id="cert" class="cert">
+    <div class="cert-logo">🏆</div>
+    <div class="cert-title">شهادة إتمام مغامرة الكنز المفقود</div>
+    <p>تشهد اللعبة بأن الطالب قد أكمل تحديات الدراسات الاجتماعية، وأظهر مهارات في الاستكشاف والتحليل والاستدلال.</p>
+    <div class="cert-name" id="cName"></div>
+    <div class="cert-row">الصف: <b id="cGrade"></b></div>
+    <div class="cert-row">النتيجة: <b id="cScore"></b></div>
+    <div class="cert-row">التاريخ: <b id="cDate"></b></div>
+    <div class="cert-sign">
+      <div>المعلم: رائد السقار</div>
+      <div>المدرسة: مدرسة محمد بن راشد الحلقة الثانية والثالثة</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. لوحة المعلم -->
+<section id="s-teacher" class="screen">
+  <div class="card wide">
+    <h2>📋 لوحة المعلم: نتائج الطلاب</h2>
+    <p class="small-txt">النتائج محفوظة محليًا على هذا الجهاز فقط، ولا تُرسل تلقائيًا إلى المعلم أو منصة المدرسة. استخدم زر التصدير لنقلها إلى ملف CSV.</p>
+    <div class="t-stats" id="tStats"></div>
+    <div class="row-btns">
+      <input id="tSearch" placeholder="🔍 ابحث باسم الطالب" style="max-width:320px" />
+      <button id="btnExport" class="btn btn-gold small" type="button">⬇️ تصدير CSV</button>
+      <button id="btnClearRes" class="btn btn-ghost small" type="button">🗑️ مسح جميع النتائج</button>
+      <button id="btnTBack" class="btn btn-ghost small" type="button">رجوع</button>
+    </div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table class="report">
+        <thead>
+          <tr>
+            <th>الطالب</th><th>الصف</th><th>النقاط (من 100)</th><th>الإجابات الصحيحة من أول محاولة</th>
+            <th>المراحل المكتملة</th><th>المهارات المتقنة</th><th>المهارات التي تحتاج تعزيزًا</th>
+            <th>زمن الإنجاز</th><th>التوصية</th><th>التاريخ</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- النوافذ والإشعارات -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+    <div id="mActions" class="btn-row"></div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* ===================================================================
+   أولًا: الإعدادات العامة
+   =================================================================== */
+const $ = id => document.getElementById(id);
+const KEY_SAVE = 'lost_treasure_save_v1';
+const KEY_RES  = 'lost_treasure_results_v1';
+const KEY_SOUND= 'lost_treasure_sound_v1';
+const BASE_PTS = 10, CLUE_PTS = 3, HINT_COST = 2, MIN_PTS = 2;
+
+const GRADES = [
+  {v:'5',t:'الصف الخامس'},{v:'6',t:'الصف السادس'},{v:'7',t:'الصف السابع'},{v:'8',t:'الصف الثامن'},
+  {v:'9',t:'الصف التاسع'},{v:'10',t:'الصف العاشر'},{v:'11',t:'الصف الحادي عشر'},{v:'12',t:'الصف الثاني عشر'}
+];
+const MAP_POS = [[82,80],[60,56],[34,70],[24,36],[60,14]];          // مواقع المراحل (نسبة مئوية)
+const DECOS = [['🏝️',10,84],['⛵',46,90],['🌴',92,34],['⛰️',44,40],['🐪',12,50],['🏝️',90,62]];
+const BADGES = [
+  {id:'beginner',name:'المستكشف المبتدئ',icon:'🧭',desc:'إكمال المرحلة الأولى'},
+  {id:'map',name:'خبير الخرائط',icon:'🗺️',desc:'تحديد موقع منطقة العين من أول محاولة'},
+  {id:'evidence',name:'محلل الأدلة',icon:'🔎',desc:'إكمال مرحلة كهف الأدلة'},
+  {id:'hero',name:'بطل الكنز',icon:'🏆',desc:'الوصول إلى الكنز النهائي'}
+];
+
+/* ===================================================================
+   ثانيًا: بنك المحتوى (قابل للتعديل)
+   كل تحدٍّ: id, type, skill, q, clue (دليل؟), explain, tip, hint
+   الأنواع: mcq | code | drop | order | map
+   =================================================================== */
+const TABLE_EVENTS = {
+  head:['الحدث','السنة الميلادية'],
+  rows:[
+    ['تأسيس مدرسة النهيانية','1959'],
+    ['تولي الشيخ زايد حكم إمارة أبوظبي','1966'],
+    ['اجتماع عرقوب السديرة','1968'],
+    ['اجتماع دبي الثاني','1971'],
+    ['تأسيس جامعة الإمارات العربية المتحدة','1976']
+  ]
+};
+
+const STAGES = [
+  { icon:'🧭', name:'خريطة البداية', place:'معسكر المستكشفين',
+    story:'وصلت إلى معسكر المستكشفين وفي يدك الخريطة الأولى. البوابة الأولى لا تُفتح إلا لمن يعرف رموز الخريطة ويحدد موقعه بدقة.',
+    reward:{key:'المفتاح الذهبي الأول', frag:'الجزء الأول من الخريطة'},
+    challenges:[
+      {id:'s1c1', type:'mcq', skill:'قراءة الخرائط',
+       q:'تبدأ قراءة الخريطة بمعرفة اتجاهاتها الأصلية. أي العناصر الآتية يمثل اتجاهًا أصليًا؟',
+       options:['الشمال','لون البحر','عدد المدن المرسومة'], answer:0,
+       explain:'الاتجاهات الأصلية أربعة: الشمال والجنوب والشرق والغرب. ويُشار إلى الشمال عادةً بسهم البوصلة أو بالحرف N.',
+       tip:'الاتجاهات الأصلية أربعة فقط، ويُشار إلى أحدها بالحرف N.',
+       hint:'ابحث عن الاتجاه الذي يشير إليه سهم البوصلة في الخرائط عادةً.'},
+      {id:'s1c2', type:'drop', skill:'المفاهيم والمصطلحات',
+       q:'اسحب كل مفهوم إلى التعريف المناسب له، أو انقر على المفهوم ثم انقر على التعريف.',
+       items:[{id:'a',t:'الاتحاد'},{id:'b',t:'النهضة'},{id:'c',t:'التضامن'},{id:'d',t:'التحفيز'}],
+       zones:[
+         {id:'a',t:'اجتماع الكلمة وتوحيد الجهود لتحقيق هدف مشترك'},
+         {id:'b',t:'انتقال المجتمع إلى مرحلة متقدمة من التطور والتقدم'},
+         {id:'c',t:'تعاون الأفراد ووقوفهم مع بعضهم في السراء والضراء'},
+         {id:'d',t:'دفع الإنسان إلى العمل والإنجاز بالتشجيع والحافز'}],
+       map:{a:'a',b:'b',c:'c',d:'d'},
+       explain:'الاتحاد يعني توحيد الجهود، والنهضة تعني التقدم والتطور، والتضامن تعاون الأفراد، والتحفيز دفع الإنسان إلى العمل والإنجاز.',
+       tip:'تأمل معنى كل كلمة في سياق الوحدة، فالاتحاد يعني توحيد الجهود، والنهضة تعني التقدم.',
+       hint:'الاتحاد والتضامن يتعلقان بالتعاون، أما النهضة والتحفيز فيتعلقان بالتقدم والدفع إلى العمل.'},
+      {id:'s1c3', type:'map', skill:'قراءة الخرائط', clue:true,
+       q:'حدّد على الخريطة موقع منطقة العين، وهي المنطقة الشرقية لإمارة أبوظبي. انقر على النقطة الصحيحة.',
+       points:[{id:'A',x:200,y:172},{id:'B',x:282,y:182},{id:'C',x:270,y:128},{id:'D',x:245,y:110},{id:'E',x:338,y:128},{id:'F',x:150,y:222}],
+       target:'B',
+       explain:'منطقة العين هي المنطقة الشرقية لإمارة أبوظبي، ومدينة العين مقر ممثل حاكم أبوظبي للمنطقة. وتجاور المنطقة من الشرق محافظة البريمي ومنطقة الظاهرة بسلطنة عمان.',
+       tip:'منطقة العين تقع في الجهة الشرقية لإمارة أبوظبي، بعيدًا عن الساحل قليلًا.',
+       hint:'ابحث عن النقطة التي تقع في الجهة الشرقية لإمارة أبوظبي وتبتعد عن الساحل.'},
+      {id:'s1c4', type:'code', skill:'الاستدلال والربط',
+       q:'قفل البوابة الأولى يُفتح برمز السنة التي عُيّن فيها الشيخ زايد بن سلطان آل نهيان حاكمًا على المنطقة الشرقية بإمارة أبوظبي. أدخل الرمز.',
+       answer:'1946',
+       explain:'عُيّن الشيخ زايد حاكمًا على المنطقة الشرقية بإمارة أبوظبي عام 1946م، وهي محطة سبقت توليه مقاليد الحكم في أبوظبي عام 1966م.',
+       tip:'راجع المحطات السياسية في الخط الزمني للسيرة الذاتية، وابحث عن الحدث المرتبط بالمنطقة الشرقية.',
+       hint:'في الخط الزمني للسيرة الذاتية، ابحث عن الحدث المكتوب بجوار عبارة: المنطقة الشرقية.'}
+    ]},
+
+  { icon:'🏝️', name:'جزيرة المعرفة', place:'جزيرة الخطوط الزمنية',
+    story:'جزيرة المعرفة تحتفظ بأسرار الزمن. حوّل ما تعلمته إلى خطوط زمنية واضحة، وميّز بين المفاهيم المتشابهة.',
+    reward:{key:'مفتاح المعرفة', frag:'الجزء الثاني من الخريطة', item:'قطعة أثرية: عملة قديمة'},
+    challenges:[
+      {id:'s2c1', type:'mcq', skill:'التسلسل الزمني',
+       q:'أي نوع من الخطوط الزمنية يتميز بضعف سُمكه، ويهدف إلى إبراز تسلسل الأحداث والمدد الفاصلة بينها؟',
+       options:['الخط الزمني البسيط','الخط الزمني المركب','الخط الزمني الدائري'], answer:0,
+       explain:'الخط الزمني البسيط يتميز بضعف سُمكه، ويركز على إظهار تعاقب الأحداث والمدد الزمنية الفاصلة بينها.',
+       tip:'الخط المركب يتجاوز إبراز التسلسل إلى المقارنة والتركيب وتقويم التحصيل، فراجع الفرق بينهما.',
+       hint:'تذكّر: النوع الذي يهدف إلى إظهار التسلسل فقط هو الأبسط.'},
+      {id:'s2c2', type:'mcq', skill:'قراءة الخطوط الزمنية',
+       q:'صح أم خطأ: في الخط الزمني تمثل الجهة اليمنى المستقبل، بينما تمثل الجهة اليسرى الماضي.',
+       options:['صح','خطأ'], answer:1,
+       explain:'العكس هو الصحيح: يُوجَّه الخط الزمني نحو اليسار الذي يمثل المستقبل، بينما تمثل الجهة اليمنى الماضي.',
+       tip:'تذكّر اتجاه الخط الزمني: الماضي على اليمين والمستقبل على اليسار.',
+       hint:'فكّر في اتجاه الزمن على الخط: هل يتقدم نحو اليسار أم نحو اليمين؟'},
+      {id:'s2c3', type:'drop', skill:'التفكير الناقد', clue:true,
+       q:'صنّف كل مهارة حسب نوعها: اسحب كل عبارة إلى النوع المناسب لها، أو انقر عليها ثم على النوع.',
+       items:[
+         {id:'a',t:'يكتشف ويحلل ويقارن وينتقد'},
+         {id:'b',t:'ينمّي الحس الجماعي أثناء العمل'},
+         {id:'c',t:'كشف الحقيقة التاريخية'},
+         {id:'d',t:'كشف العلاقة بين السبب والنتيجة'}],
+       zones:[{id:'g',t:'مهارات عامة'},{id:'h',t:'مهارات مرتبطة بطبيعة الفكر التاريخي'}],
+       map:{a:'g',b:'g',c:'h',d:'h'},
+       explain:'المهارات العامة تشمل النشاط العقلي كالتحليل والمقارنة والاستنتاج والنقد، أما المهارات المرتبطة بطبيعة الفكر التاريخي فتتصل بكشف الحقيقة التاريخية والعلاقة بين السبب والنتيجة.',
+       tip:'اسأل نفسك: هل تتعلق العبارة بالنشاط العقلي عمومًا، أم بطبيعة الفكر التاريخي تحديدًا؟',
+       hint:'العبارات التي تتحدث عن السبب والحقيقة التاريخية تنتمي إلى الفكر التاريخي.'},
+      {id:'s2c4', type:'mcq', skill:'الاستدلال والربط',
+       q:'من شروط نجاح توظيف الخط الزمني في الدرس:',
+       options:['أن يكون للخط مقياس دقيق وواضح تتناسب فيه المسافات مع المدد الزمنية','أن يكون مليئًا بتفاصيل كثيرة غير مرتبطة بالدرس','أن يُستخدم في أي وقت دون هدف تعليمي محدد'], answer:0,
+       explain:'من شروط نجاح توظيف الخط الزمني أن يكون له مقياس دقيق وواضح، وأن يكون مرتبطًا بالدرس، وبسيطًا وخاليًا من التعقيد.',
+       tip:'الشرط الصحيح يتعلق بالدقة والوضوح والارتباط بالدرس، لا بالكثرة أو العشوائية.',
+       hint:'فكّر في ما يجعل الخط الزمني مفيدًا للتعلم: الدقة والوضوح والارتباط بالدرس.'}
+    ]},
+
+  { icon:'🔎', name:'كهف الأدلة', place:'كهف الوثائق القديمة',
+    story:'في كهف الأدلة تتحدث الوثائق. اقرأ المصدر بعناية، واربط بين السبب والنتيجة، واختر الدليل الذي يدعم إجابتك.',
+    reward:{key:'مفتاح الأدلة', frag:'الجزء الثالث من الخريطة'},
+    challenges:[
+      {id:'s3c1', type:'mcq', skill:'الفكرة الرئيسة', clue:true,
+       passage:'قال الشيخ زايد بن سلطان آل نهيان رحمه الله: «إن كان الله عز وجل قد منّ علينا بالثروة، فإن أول ما نلتزم به أن نوجه هذه الثروة لإصلاح البلاد، ولسوق الخير لشعبها».',
+       q:'ما الفكرة الرئيسة التي يتضمنها النص؟',
+       options:['أولوية توجيه الثروة لإصلاح البلاد وخدمة الشعب','الحرص على جمع الثروة وتخزينها دون إنفاقها','الاستغناء عن الثروة والاكتفاء بالعيش البسيط'], answer:0,
+       explain:'تؤكد الفكرة الرئيسة أن الثروة نعمة تُوجَّه لخدمة الوطن والمواطنين، وهذا هو الالتزام الذي يبرزه النص.',
+       tip:'اقرأ الجملة التي تبدأ بعبارة «فإن أول ما نلتزم به»، فهي تحمل الفكرة الرئيسة.',
+       hint:'ركّز على الجزء الذي يتحدث عمّا يجب أن نلتزم به تجاه الثروة.'},
+      {id:'s3c2', type:'mcq', skill:'الاستدلال والربط',
+       q:'ما النتيجة المتوقعة للتقارب بين الشيخ زايد والشيخ راشد بن سعيد آل مكتوم رحمهما الله في سبيل الاتحاد؟',
+       options:['تحقيق حلم قيام الاتحاد وبناء الدولة','إضعاف الروابط بين الإمارات','توقف الحوار بين الحكام'], answer:0,
+       explain:'كان التقارب بين الشيخين ركيزة لتحقيق حلم الاتحاد، فالتفاهم بين الحكام كان السبيل إلى بناء الدولة الاتحادية.',
+       tip:'فكّر في ما يحققه التعاون والتفاهم بين الحكام في مشروع مشترك.',
+       hint:'تذكّر أن الشيخين كانا يعملان معًا على الحلم نفسه.'},
+      {id:'s3c3', type:'mcq', skill:'تحليل النصوص', clue:true,
+       q:'أي الأدلة الآتية يدعم القول بأن الشيخ زايد اهتم بالبيئة مبكرًا؟',
+       options:['اهتمامه المبكر بالبيئة والاستدامة في وقت لم تكن فيه هذه المصطلحات شائعة الاستخدام','انشغاله بالحياة الاجتماعية فقط دون أي اهتمام بالتنمية','تركه للحكم في سنوات التأسيس الأولى'], answer:0,
+       explain:'جاء في الكتاب أن الشيخ زايد اهتم بالبيئة والاستدامة مبكرًا، وهذا هو الدليل المباشر الذي يدعم الفكرة.',
+       tip:'اختر العبارة التي تقدم دليلًا صريحًا من النص، لا العبارة التي تفترض أمرًا غير مذكور.',
+       hint:'ابحث عن عبارة تذكر البيئة أو الاستدامة صراحةً.'},
+      {id:'s3c4', type:'code', skill:'الاستدلال والربط',
+       q:'فك الشفرة: أدخل عدد الرؤى الواردة في الوحدة الثالثة «الفكر الاتحادي عند الشيخ زايد». (راجع مدخل الوحدة)',
+       answer:'6',
+       explain:'تضم الوحدة الثالثة ست رؤى، ومعرفة عددها تساعد على تنظيم المحتوى وفهم بنيته.',
+       tip:'عُدّ الرؤى المرقّمة في مدخل الوحدة.',
+       hint:'الرؤى مرقّمة من 1 إلى ...'}
+    ]},
+
+  { icon:'🧩', name:'بوابة الاستكشاف', place:'بوابة الجداول والبيانات',
+    story:'بوابة الاستكشاف مغلقة بقفل من الأرقام. الجداول والبيانات هي مفاتيحها: اقرأها بعناية، وقارن، ثم استنتج.',
+    reward:{key:'مفتاح البوابة', frag:'الجزء الرابع من الخريطة'},
+    challenges:[
+      {id:'s4c1', type:'mcq', skill:'قراءة الجداول والبيانات', table:TABLE_EVENTS,
+       q:'وفق الجدول: كم سنة تفصل بين اجتماع عرقوب السديرة واجتماع دبي الثاني؟',
+       options:['2','3','5','8'], answer:1,
+       explain:'الفرق بين 1971 و1968 يساوي 3 سنوات.',
+       tip:'اطرح السنة الأقدم من السنة الأحدث.',
+       hint:'ابحث عن السنتين في الجدول ثم اطرح الأصغر من الأكبر.'},
+      {id:'s4c2', type:'mcq', skill:'الاستدلال والربط', clue:true, table:TABLE_EVENTS,
+       q:'بناءً على الجدول، أي العبارات الآتية صحيحة؟',
+       options:['تولّى الشيخ زايد حكم أبوظبي قبل إنشاء جامعة الإمارات بعشر سنوات','أُنشئت جامعة الإمارات قبل تولي الشيخ زايد حكم أبوظبي','وقع اجتماع عرقوب السديرة قبل تأسيس مدرسة النهيانية'], answer:0,
+       explain:'1976 − 1966 = 10 سنوات. فالحدث الأقدم هو تولي الحكم عام 1966م، وجامعة الإمارات تأسست عام 1976م.',
+       tip:'قارن سنة كل حدث بالأخرى؛ فالسنة الأصغر تعني حدثًا أقدم.',
+       hint:'احسب الفرق بين سنة تأسيس الجامعة وسنة تولي الحكم.'},
+      {id:'s4c3', type:'drop', skill:'الاستدلال والربط',
+       q:'اربط كل إنجاز بالمجال الذي ينتمي إليه: اسحب الإنجاز إلى المجال المناسب، أو انقر عليه ثم على المجال.',
+       items:[
+         {id:'a',t:'جامعة الإمارات العربية المتحدة'},
+         {id:'b',t:'العمل على مشروع إرسال أول مسبار عربي إلى كوكب المريخ'},
+         {id:'c',t:'استضافة إكسبو 2020 دبي'},
+         {id:'d',t:'مدرسة النهيانية'}],
+       zones:[{id:'edu',t:'التعليم'},{id:'space',t:'تكنولوجيا الفضاء'},{id:'eco',t:'الاقتصاد والسياحة'}],
+       map:{a:'edu',b:'space',c:'eco',d:'edu'},
+       explain:'تنتمي الجامعة والمدرسة إلى مجال التعليم، ويرتبط مشروع المسبار بتكنولوجيا الفضاء، ويعزز إكسبو 2020 قطاعي الاقتصاد والسياحة.',
+       tip:'اسأل نفسك: ما الغرض الأساسي من هذا الإنجاز؟',
+       hint:'الجامعة والمدرسة تخدمان التعليم، والمسبار مرتبط بالفضاء، والمعرض يعزز الاقتصاد.'},
+      {id:'s4c4', type:'code', skill:'الاستدلال والربط',
+       q:'القفل يُفتح برمز سنة تأسيس جامعة الإمارات العربية المتحدة. أدخل الرمز.',
+       answer:'1976',
+       explain:'تأسست جامعة الإمارات العربية المتحدة عام 1976م في مدينة العين بمبادرة من الشيخ زايد، لتكون جامعة اتحادية ذات هوية عربية إسلامية.',
+       tip:'راجع الجدول، فالسنة المرتبطة بتأسيس الجامعة موجودة فيه.',
+       hint:'انظر إلى السطر الأخير في الجدول.'}
+    ]},
+
+  { icon:'💰', name:'الكنز النهائي', place:'الصندوق المغلق',
+    story:'وصلت إلى الصندوق الأخير. تحدٍّ يجمع ما تعلمته: رتّب الأحداث، واستدل على المعاني، وأدخل الرمز الأخير لتفتح الكنز.',
+    reward:null,
+    challenges:[
+      {id:'s5c1', type:'order', skill:'التسلسل الزمني',
+       q:'رتّب خطوات قيام الاتحاد بالترتيب الزمني الصحيح. انقر على الخطوات بالترتيب من الأول إلى الأخير.',
+       items:['اجتماع عرقوب السديرة، 18 فبراير 1968م','اجتماع دبي الأول، 25 إلى 27 فبراير 1968م','اجتماع دبي الثاني، 18 يوليو 1971م'],
+       explain:'بدأت الخطوات بعرقوب السديرة في 18 فبراير 1968م، ثم اجتماع دبي الأول في 25-27 فبراير 1968م، ثم اجتماع دبي الثاني في 18 يوليو 1971م.',
+       tip:'ابدأ بالحدث الأقدم، وتذكّر أن الشهر والسنة يحددان الترتيب.',
+       hint:'الحدثان الأولان في عام 1968م، والأخير في عام 1971م.'},
+      {id:'s5c2', type:'mcq', skill:'تحليل النصوص',
+       q:'قال الشيخ زايد رحمه الله: «إنني لا أرغب في نقل البدو إلى المدينة، بل سوف أنقل المدينة إلى البدو». أي المعاني الآتية يعبّر عنه القول؟',
+       options:['إيصال الخدمات والتنمية إلى المجتمع حيث يعيش، دون إجبار الناس على ترك حياتهم','رفض التنمية والتطوير في المدن','الاهتمام بالمدن وإهمال البادية'], answer:0,
+       explain:'يعبّر القول عن فلسفة تنموية تقوم على إيصال الخدمات والتطور إلى الناس في أماكنهم، ليجني الجميع ثمار التطور.',
+       tip:'انتبه إلى الفعل «أنقل»: ماذا يُنقل، ومن أين إلى أين؟',
+       hint:'تأمل ما الذي يُنقل في القول، ومن أين وإلى أين.'},
+      {id:'s5c3', type:'mcq', skill:'التفكير الناقد', clue:true,
+       q:'وصف الشيخ زايد الاتحاد بقوله: «الاتحاد يعيش في نفسي وفي قلبي». أي المعاني الآتية يعبّر عنه هذا القول؟',
+       options:['الاتحاد قيمة راسخة في الوجدان تستوجب الوفاء والحرص عليه','الاتحاد فكرة مؤقتة يمكن الاستغناء عنها','الاتحاد أمر يخص الحكام وحدهم دون المواطنين'], answer:0,
+       explain:'يدل القول على أن الاتحاد قيمة راسخة في القلب والوجدان، لا يجوز التفريط فيها أو التهاون في مستقبلها.',
+       tip:'اختر المعنى الذي يتفق مع عبارتي «في نفسي» و«في قلبي».',
+       hint:'تأمل معنى الانتماء الذي تدل عليه عبارة «في قلبي».'},
+      {id:'s5c4', type:'code', skill:'الاستدلال والربط',
+       q:'القفل الأخير يُفتح برقم المرتبة التي احتلتها دولة الإمارات العربية المتحدة في مؤشر التنمية البشرية وفق تقرير عام 2019م. أدخل الرمز.',
+       answer:'35',
+       explain:'احتلت دولة الإمارات المرتبة 35 عالميًا وفق تقرير مؤشر التنمية البشرية لعام 2019م، الصادر عن برنامج الأمم المتحدة، ضمن دول «التنمية البشرية العالية للغاية».',
+       tip:'راجع فقرة «رؤى مستقبلية» في الرؤية الخامسة.',
+       hint:'الرقم مذكور في فقرة «رؤى مستقبلية» ضمن الرؤية الخامسة.'}
+    ]}
+];
+
+/* ===================================================================
+   ثالثًا: أدوات مساعدة
+   =================================================================== */
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  if(attrs){
+    for(const k of Object.keys(attrs)){
+      const v = attrs[k];
+      if(v==null || v===false) continue;
+      if(k.startsWith('on') && typeof v==='function') el.addEventListener(k.slice(2), v);
+      else if(k==='class') el.className = v;
+      else el.setAttribute(k, v===true ? '' : v);
+    }
+  }
+  kids.flat(Infinity).forEach(c=>{
+    if(c==null || c===false) return;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  });
+  return el;
+}
+
+const memStore = {};
+const canLS = (()=>{ try{ const t='__lt__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(e){ return false; } })();
+const store = {
+  get(k){ try{ if(canLS){ const v=localStorage.getItem(k); return v===null?null:JSON.parse(v); } return (k in memStore)?memStore[k]:null; }catch(e){ return null; } },
+  set(k,v){ try{ if(canLS){ localStorage.setItem(k,JSON.stringify(v)); return; } }catch(e){} memStore[k]=v; },
+  del(k){ try{ if(canLS) localStorage.removeItem(k); }catch(e){} delete memStore[k]; }
+};
+
+function totalChallenges(){ return STAGES.reduce((a,s)=>a+s.challenges.length,0); }
+function allChallenges(){ return STAGES.flatMap(s=>s.challenges); }
+const CLUES_TOTAL = allChallenges().filter(c=>c.clue).length;
+const MAX_POINTS  = allChallenges().reduce((a,c)=>a+BASE_PTS+(c.clue?CLUE_PTS:0),0);
+
+function normDigits(s){
+  return String(s)
+    .replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g, d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/\s+/g,'').trim();
+}
+function shuffled(n){
+  const a=[...Array(n).keys()];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  if(n>1 && a.every((v,i)=>v===i)) a.reverse();
+  return a;
+}
+function gradeLabel(v){ const g=GRADES.find(x=>x.v===String(v)); return g?g.t:(v||'—'); }
+function fmtDur(sec){ sec=Math.max(0,Math.round(sec||0)); return `${Math.floor(sec/60)} د ${sec%60} ث`; }
+function lvCls(l){ return l==='متقن'?'lv-ok':(l==='يحتاج تعزيز'?'lv-low':'lv-mid'); }
+function buildTable(t){
+  return h('div',{class:'table-box'},
+    h('table',{class:'mini'},
+      h('thead',{}, h('tr',{}, t.head.map(x=>h('th',{},x)))),
+      h('tbody',{}, t.rows.map(r=>h('tr',{}, r.map(c=>h('td',{},c)))))));
+}
+
+/* ===================================================================
+   رابعًا: الصوت (مُولَّد برمجيًا، لا يحتاج ملفات خارجية)
+   =================================================================== */
+let soundOn = store.get(KEY_SOUND);
+soundOn = (soundOn===null) ? true : !!soundOn;
+let actx = null;
+function tone(freqs, type, step, vol){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    const t0 = actx.currentTime;
+    freqs.forEach((f,i)=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      const s=t0+i*step;
+      o.type=type; o.frequency.value=f;
+      g.gain.setValueAtTime(vol,s);
+      g.gain.exponentialRampToValueAtTime(0.0001,s+step);
+      o.connect(g); g.connect(actx.destination);
+      o.start(s); o.stop(s+step+0.02);
+    });
+  }catch(e){}
+}
+const SFX = {
+  click:()=>tone([620],'triangle',0.05,0.04),
+  ok:()=>tone([523,659,784],'sine',0.11,0.08),
+  bad:()=>tone([240,190],'sawtooth',0.16,0.05),
+  unlock:()=>tone([392,494,587,784],'triangle',0.13,0.08),
+  win:()=>tone([523,659,784,1047,1319,1047],'triangle',0.15,0.08)
+};
+function updateSoundBtns(){
+  document.querySelectorAll('.sndBtn').forEach(b=>b.textContent = soundOn ? '🔊 الصوت: مفعّل' : '🔇 الصوت: متوقف');
+}
+
+/* ===================================================================
+   خامسًا: حالة اللعبة والحفظ
+   =================================================================== */
+let G = null;
+
+function newGame(name, grade){
+  return {
+    name, grade, current:0,
+    stageDone:[false,false,false,false,false],
+    stageIdx:[0,0,0,0,0],
+    solved:{}, attempts:{}, hints:{}, clues:[],
+    points:0, firstOk:0, wrong:0,
+    skills:{}, badges:[], finished:false, result:null,
+    playMs:0, lastTick:Date.now()
+  };
+}
+function tick(){
+  if(!G) return;
+  const now=Date.now();
+  G.playMs += Math.min(Math.max(0, now-(G.lastTick||now)), 180000); // نحسب زمن اللعب الفعلي فقط
+  G.lastTick = now;
+}
+function save(){
+  if(!G) return;
+  tick();
+  store.set(KEY_SAVE, {v:1, G});
+  updateHud();
+}
+function loadGame(){
+  const s = store.get(KEY_SAVE);
+  if(s && s.G && s.G.name){ G = s.G; G.lastTick = Date.now(); return true; }
+  return false;
+}
+
+function curStage(){ return STAGES[G.current]; }
+function curChallenge(){ return curStage().challenges[G.stageIdx[G.current]]; }
+function isUnlocked(i){ return i===0 || !!G.stageDone[i-1]; }
+function nextAvail(){ for(let i=0;i<STAGES.length;i++){ if(!G.stageDone[i]) return i; } return STAGES.length-1; }
+function progressPct(){ return Math.round(Object.keys(G.solved).length/totalChallenges()*100); }
+function calcScore(){ return G ? Math.min(100, Math.round(G.points/MAX_POINTS*100)) : 0; }
+
+/* ===================================================================
+   سادسًا: التنقل بين الشاشات
+   =================================================================== */
+const SCREENS=['s-start','s-setup','s-instr','s-map','s-stage','s-victory','s-results','s-cert','s-teacher'];
+function showScreen(id){
+  SCREENS.forEach(s=>$(s).classList.toggle('active', s===id));
+  $('hud').classList.toggle('hidden', !(G && (id==='s-map' || id==='s-stage')));
+  window.scrollTo(0,0);
+}
+function refreshStart(){
+  const s = store.get(KEY_SAVE);
+  $('btnResume').classList.toggle('hidden', !(s && s.G && s.G.name && !s.G.finished));
+}
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+function openModal(o){
+  $('mTitle').textContent = o.title || '';
+  const b=$('mBody'); b.innerHTML='';
+  if(typeof o.body==='string') b.textContent=o.body; else if(o.body) b.append(o.body);
+  const a=$('mActions'); a.innerHTML='';
+  (o.actions||[]).forEach(x=>{
+    const btn=h('button',{class:'btn '+(x.cls||'btn-gold'), type:'button'}, x.label);
+    btn.addEventListener('click',()=>{ closeModal(); if(x.fn) x.fn(); });
+    a.append(btn);
+  });
+  $('modal').classList.add('show');
+}
+function closeModal(){ $('modal').classList.remove('show'); }
+
+function updateHud(){
+  if(!G) return;
+  const keys = G.stageDone.slice(0,4).filter(Boolean).length;
+  $('hudScore').textContent = calcScore();
+  $('hudKeys').textContent = `${keys}/4`;
+  $('hudFrag').textContent = `${keys}/4`;
+  $('hudClues').textContent = `${G.clues.length}/${CLUES_TOTAL}`;
+  const p=progressPct();
+  $('hudBar').style.width = p+'%';
+  $('hudPct').textContent = p+'%';
+}
+
+/* ===================================================================
+   سابعًا: الخريطة
+   =================================================================== */
+function showMap(){
+  if(!G){ showScreen('s-start'); return; }
+  showScreen('s-map');
+  const board=$('board');
+  board.querySelectorAll('.node,.explorer,.deco').forEach(n=>n.remove());
+  DECOS.forEach(([t,x,y])=>board.append(h('div',{class:'deco', style:`left:${x}%;top:${y}%`}, t)));
+  STAGES.forEach((st,i)=>{
+    const state = G.stageDone[i] ? 'done' : (isUnlocked(i) ? 'avail' : 'locked');
+    const node = h('button',{class:`node ${state}`, type:'button', title:st.name, style:`left:${MAP_POS[i][0]}%;top:${MAP_POS[i][1]}%`},
+      h('span',{class:'node-ic'}, state==='done' ? '✔' : (state==='locked' ? '🔒' : st.icon)),
+      h('span',{class:'node-lbl'}, `${i+1}. ${st.name}`));
+    node.addEventListener('click',()=>onNodeClick(i));
+    board.append(node);
+  });
+  const pos = G.stageDone[G.current] ? nextAvail() : G.current;
+  board.append(h('div',{class:'explorer', id:'explorer', style:`left:${MAP_POS[pos][0]}%;top:calc(${MAP_POS[pos][1]}% - 64px)`}, '🧭'));
+  const keys = G.stageDone.slice(0,4).filter(Boolean).length;
+  $('mapMsg').textContent = G.finished
+    ? '🏆 لقد وجدت الكنز! يمكنك مراجعة النتائج.'
+    : `الأدلة المتبقية: ${CLUES_TOTAL-G.clues.length} • الأختام المكتسبة: ${keys}/4 • نسبة التقدم: ${progressPct()}%`;
+  $('btnNext').textContent = G.finished ? '📊 عرض النتائج' : '➜ ابدأ المرحلة التالية';
+  updateHud();
+}
+function moveExplorer(i){
+  const ex=$('explorer');
+  if(ex){ ex.style.left=MAP_POS[i][0]+'%'; ex.style.top=`calc(${MAP_POS[i][1]}% - 64px)`; }
+}
+function onNodeClick(i){
+  if(G.stageDone[i]){ toast('هذه المرحلة مكتملة ✔'); return; }
+  if(!isUnlocked(i)){ SFX.bad(); toast('🔒 أكمل المرحلة السابقة لفتح هذه البوابة.'); return; }
+  SFX.click();
+  moveExplorer(i);
+  setTimeout(()=>enterStage(i), 650);
+}
+function enterStage(i){
+  if(!isUnlocked(i) || G.stageDone[i]){ showMap(); return; }
+  G.current=i; save();
+  showScreen('s-stage');
+  renderStage();
+}
+
+/* ===================================================================
+   ثامنًا: المرحلة والتحديات
+   =================================================================== */
+function renderStage(){
+  const st=curStage(); const idx=G.stageIdx[G.current];
+  if(!st) return;
+  if(idx>=st.challenges.length){
+    if(!G.stageDone[G.current]) completeStage(); else showMap();
+    return;
+  }
+  $('s-stage').classList.toggle('final', G.current===4);
+  $('stTitle').textContent = `${st.icon} المرحلة ${G.current+1}: ${st.name}`;
+  $('stPlace').textContent = `📍 ${st.place}`;
+  $('stStory').textContent = st.story;
+  const chips=$('stChips'); chips.innerHTML='';
+  st.challenges.forEach((c,i)=>{
+    const cls = G.solved[c.id] ? 'done' : (i===idx ? 'cur' : '');
+    chips.append(h('span',{class:'chip '+cls, title:c.skill}, G.solved[c.id] ? '✔' : String(i+1)));
+  });
+  renderChallenge();
+  updateHud();
+}
+
+function renderChallenge(){
+  const ch=curChallenge(); const box=$('chArea'); box.innerHTML='';
+  if(!ch) return;
+  const n=G.stageIdx[G.current]+1, total=curStage().challenges.length;
+  box.append(h('div',{class:'q-meta'},
+    h('span',{class:'tag'}, `السؤال ${n} من ${total}`),
+    h('span',{class:'tag'}, '🎯 '+ch.skill),
+    ch.clue ? h('span',{class:'tag clue'}, '🔎 دليل قابل للاكتشاف') : null));
+  box.append(h('div',{class:'q-text'}, ch.q));
+  if(ch.passage) box.append(h('div',{class:'passage'}, ch.passage));
+  if(ch.table) box.append(buildTable(ch.table));
+  const body=h('div',{class:'q-body'});
+  box.append(body);
+  box.append(h('div',{id:'fb', class:'feedback'}));
+  box.append(h('div',{class:'q-actions'},
+    h('button',{class:'btn btn-ghost small', type:'button', onclick:()=>showHint(ch)}, `💡 تلميح (خصم ${HINT_COST} نقاط)`)));
+  const R={mcq:renderMCQ, code:renderCode, drop:renderDrop, order:renderOrder, map:renderMap};
+  R[ch.type](ch, body);
+}
+
+function setFb(type,msg){
+  const f=$('fb'); if(!f) return;
+  f.className='feedback show '+type; f.textContent=msg;
+}
+function showHint(ch){
+  if(G.solved[ch.id]) return;
+  if(!G.hints[ch.id]){ G.hints[ch.id]=true; save(); }
+  SFX.click();
+  setFb('hint','💡 '+ch.hint+` (تم خصم ${HINT_COST} نقاط عند إتمام هذا التحدي)`);
+}
+function onWrong(ch,msg,shakeEl){
+  if(G.solved[ch.id]) return;
+  G.attempts[ch.id]=(G.attempts[ch.id]||0)+1;
+  G.wrong++; save();
+  SFX.bad();
+  if(shakeEl){ shakeEl.classList.remove('shake'); void shakeEl.offsetWidth; shakeEl.classList.add('shake'); }
+  setFb('bad','❌ '+msg);
+}
+function onRight(ch){
+  if(G.solved[ch.id]) return;
+  const wrong=G.attempts[ch.id]||0, hint=!!G.hints[ch.id];
+  const pts=Math.max(MIN_PTS, BASE_PTS-3*wrong-(hint?HINT_COST:0));
+  G.solved[ch.id]={pts,wrong,hint};
+  G.points+=pts;
+  if(ch.clue){ G.points+=CLUE_PTS; G.clues.push(ch.id); }
+  if(wrong===0) G.firstOk++;
+  const sk=G.skills[ch.skill]||(G.skills[ch.skill]={ok:0,total:0});
+  sk.total++; if(wrong===0) sk.ok++;
+  G.stageIdx[G.current]++;
+  checkBadges(); save(); SFX.ok();
+  const body=h('div',{},
+    h('p',{}, ch.explain),
+    ch.clue ? h('p',{class:'clue-note'}, `🔎 دليل جديد! +${CLUE_PTS} نقاط`) : null,
+    h('p',{class:'small-txt'}, `النقاط المكتسبة: ${pts}` + (wrong ? ` (بعد ${wrong} محاولة خاطئة)` : ' (من أول محاولة)')));
+  openModal({title:'✅ إجابة صحيحة', body, actions:[{label:'متابعة ➜', fn:afterSolve}]});
+}
+function afterSolve(){
+  const st=curStage();
+  if(G.stageIdx[G.current] >= st.challenges.length) completeStage();
+  else renderStage();
+  save();
+}
+
+/* ----- أنواع التحديات ----- */
+function renderMCQ(ch, body){
+  const grid=h('div',{class:'opts'});
+  ch.options.forEach((t,i)=>{
+    const b=h('button',{class:'opt', type:'button'}, t);
+    b.addEventListener('click',()=>{
+      if(b.disabled) return;
+      SFX.click();
+      if(i===ch.answer){
+        b.classList.add('right');
+        grid.querySelectorAll('button').forEach(x=>x.disabled=true);
+        onRight(ch);
+      }else{
+        b.disabled=true; b.classList.add('wrong');
+        onWrong(ch, ch.tip, b);
+      }
+    });
+    grid.append(b);
+  });
+  body.append(grid);
+}
+
+function renderCode(ch, body){
+  const input=h('input',{type:'text', inputmode:'numeric', maxlength:'8', class:'code-input', placeholder:'الرمز', autocomplete:'off'});
+  const lock=h('div',{class:'lock'}, '🔒');
+  const btn=h('button',{class:'btn btn-gold', type:'button'}, '🔓 فتح القفل');
+  const go=()=>{
+    const v=normDigits(input.value);
+    if(!v){ setFb('bad','اكتب الرمز أولًا.'); return; }
+    if(v===String(ch.answer)){
+      lock.textContent='🔓'; lock.classList.add('open');
+      onRight(ch);
+    }else{
+      input.value=''; input.focus();
+      onWrong(ch, 'الرمز غير صحيح. '+ch.tip, lock);
+    }
+  };
+  btn.addEventListener('click',go);
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+  body.append(h('div',{class:'lock-row'}, lock, input, btn));
+  setTimeout(()=>input.focus(),60);
+}
+
+function renderDrop(ch, body){
+  const placed={}; let sel=null;
+  const chipsBox=h('div',{class:'chips'});
+  const zonesBox=h('div',{class:'zones'});
+  body.append(h('div',{class:'hint-line'}, 'اسحب العنصر إلى المكان المناسب، أو انقر عليه ثم انقر على المكان.'), chipsBox, zonesBox);
+
+  const attempt=(id,zid)=>{
+    if(!id || G.solved[ch.id]) return;
+    if(ch.map[id]===zid){
+      placed[id]=zid; sel=null; SFX.ok();
+      if(Object.keys(placed).length===ch.items.length){ paint(); onRight(ch); return; }
+      setFb('good','✔ مطابقة صحيحة، أكمل بقية العناصر.');
+      paint();
+    }else{
+      sel=null; paint();
+      onWrong(ch, ch.tip, zonesBox);
+    }
+  };
+
+  const paint=()=>{
+    chipsBox.innerHTML=''; zonesBox.innerHTML='';
+    ch.items.forEach(it=>{
+      if(placed[it.id]) return;
+      const chip=h('div',{class:'chip-item'+(sel===it.id?' selected':''), draggable:'true', tabindex:'0'}, it.t);
+      chip.addEventListener('click',()=>{ SFX.click(); sel=(sel===it.id)?null:it.id; paint(); });
+      chip.addEventListener('dragstart',e=>{ sel=it.id; try{ e.dataTransfer.setData('text/plain', it.id); }catch(_){} });
+      chipsBox.append(chip);
+    });
+    ch.zones.forEach(z=>{
+      const items=Object.keys(placed).filter(k=>placed[k]===z.id);
+      const zone=h('div',{class:'zone'},
+        h('div',{class:'zone-text'}, z.t),
+        items.length ? items.map(k=>h('div',{class:'zone-item'}, ch.items.find(x=>x.id===k).t)) : h('div',{class:'zone-slot'}, 'ضع هنا'));
+      zone.addEventListener('dragover',e=>{ e.preventDefault(); zone.classList.add('over'); });
+      zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+      zone.addEventListener('drop',e=>{
+        e.preventDefault(); zone.classList.remove('over');
+        let id=''; try{ id=e.dataTransfer.getData('text/plain'); }catch(_){}
+        attempt(id||sel, z.id);
+      });
+      zone.addEventListener('click',()=>{ if(sel) attempt(sel, z.id); });
+      zonesBox.append(zone);
+    });
+  };
+  paint();
+}
+
+function renderOrder(ch, body){
+  const seq=[];
+  const pool=shuffled(ch.items.length);
+  const seqBox=h('div',{});
+  const poolBox=h('div',{class:'chips'});
+  const check=h('button',{class:'btn btn-blue small', type:'button'}, '✔ تحقق من الترتيب');
+  const reset=h('button',{class:'btn btn-ghost small', type:'button'}, '↩ إعادة الترتيب');
+  const paint=()=>{
+    seqBox.innerHTML=''; poolBox.innerHTML='';
+    seq.forEach((idx,n)=>seqBox.append(h('div',{class:'seq-item'}, `${n+1}. ${ch.items[idx]}`)));
+    pool.filter(i=>!seq.includes(i)).forEach(i=>{
+      const c=h('div',{class:'chip-item'}, ch.items[i]);
+      c.addEventListener('click',()=>{ SFX.click(); seq.push(i); paint(); });
+      poolBox.append(c);
+    });
+    check.disabled = seq.length!==ch.items.length;
+  };
+  check.addEventListener('click',()=>{
+    const ok = seq.every((v,i)=>v===i);
+    if(ok){ onRight(ch); }
+    else{ seq.length=0; paint(); onWrong(ch, ch.tip, seqBox); }
+  });
+  reset.addEventListener('click',()=>{ seq.length=0; paint(); });
+  body.append(h('div',{class:'hint-line'}, 'انقر على العناصر بالترتيب الصحيح من الأول إلى الأخير.'), seqBox, poolBox, h('div',{class:'row-btns'}, check, reset));
+  paint();
+}
+
+function renderMap(ch, body){
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 400 260');
+  svg.setAttribute('class','umap');
+  svg.innerHTML=`
+    <rect width="400" height="260" fill="#f2e2b8"/>
+    <rect width="400" height="92" fill="#8fc7e0"/>
+    <path d="M20 30q10-6 20 0t20 0M120 60q10-6 20 0t20 0M260 40q10-6 20 0t20 0M60 75q10-6 20 0t20 0" stroke="#5fa8c9" fill="none" stroke-width="2"/>
+    <text x="24" y="22" font-size="15" fill="#0b3d5c" font-weight="bold">الخليج العربي</text>
+    <path d="M0 92L60 100L120 110L170 118L240 100L300 96L340 92L400 92L400 260L0 260Z" fill="#e7c98a" stroke="#8b5e2b" stroke-width="2"/>
+    <path d="M150 150L195 136L245 118L290 104L332 108L342 136L324 168L292 188L252 200L204 206L162 196L140 176Z" fill="#d9a441" stroke="#6b4423" stroke-width="2" opacity=".9"/>
+    <g transform="translate(365,44)"><circle r="20" fill="#fff8e5" stroke="#6b4423" stroke-width="2"/><path d="M0 -17L5 0L0 -4L-5 0Z" fill="#b23a3a"/><text y="-26" text-anchor="middle" font-size="12" font-weight="bold" fill="#3b2412">N</text></g>
+    <text x="200" y="252" text-anchor="middle" font-size="12" fill="#6b4423">خريطة تخطيطية توضيحية للتدريب على تحديد المواقع</text>`;
+  const dots={};
+  ch.points.forEach(p=>{
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('class','dot');
+    g.innerHTML=`<circle cx="${p.x}" cy="${p.y}" r="16" fill="transparent"/>
+      <circle class="dotc" cx="${p.x}" cy="${p.y}" r="6.5" fill="#b23a3a" stroke="#fff" stroke-width="2"/>
+      <text x="${p.x+10}" y="${p.y-8}" font-size="14" font-weight="bold" fill="#3b2412">${p.id}</text>`;
+    svg.append(g); dots[p.id]=g;
+  });
+  svg.addEventListener('click',e=>{
+    if(G.solved[ch.id]) return;
+    const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+    const loc=pt.matrixTransform(svg.getScreenCTM().inverse());
+    let best=null, bd=1e9;
+    ch.points.forEach(p=>{ const d=Math.hypot(loc.x-p.x, loc.y-p.y); if(d<bd){ bd=d; best=p; } });
+    if(!best || bd>22){ setFb('hint','انقر قريبًا من إحدى النقاط المرقّمة على الخريطة.'); return; }
+    SFX.click();
+    if(best.id===ch.target){
+      dots[best.id].classList.add('hit');
+      onRight(ch);
+    }else{
+      dots[best.id].classList.add('miss');
+      setTimeout(()=>dots[best.id].classList.remove('miss'),700);
+      onWrong(ch, ch.tip, svg);
+    }
+  });
+  body.append(h('div',{class:'hint-line'}, 'انقر على النقطة المطلوبة في الخريطة.'), svg);
+}
+
+/* ===================================================================
+   تاسعًا: إكمال المراحل والمغامرة
+   =================================================================== */
+const SKILL_LEVEL = pct => pct>=80 ? 'متقن' : (pct<60 ? 'يحتاج تعزيز' : 'قيد التطور');
+
+function checkBadges(){
+  const add=id=>{
+    if(G.badges.includes(id)) return;
+    G.badges.push(id);
+    const b=BADGES.find(x=>x.id===id);
+    toast(`🏅 شارة جديدة: ${b.icon} ${b.name}`);
+  };
+  if(G.stageDone[0]) add('beginner');
+  if(G.solved['s1c3'] && G.solved['s1c3'].wrong===0) add('map');
+  if(G.stageDone[2]) add('evidence');
+  if(G.finished) add('hero');
+}
+
+function completeStage(){
+  const i=G.current;
+  if(G.stageDone[i]){ showMap(); return; }
+  G.stageDone[i]=true;
+  if(i===4){ finishGame(); return; }
+  SFX.unlock();
+  const st=STAGES[i], nx=STAGES[i+1];
+  const rw=[`🗝️ ${st.reward.key}`, `🧩 ${st.reward.frag}`];
+  if(st.reward.item) rw.push(`🏺 ${st.reward.item}`);
+  checkBadges(); save();
+  openModal({
+    title:`🎉 اكتملت مرحلة: ${st.name}`,
+    body:h('div',{}, h('p',{}, 'حصلت على:'), h('ul',{class:'rewards'}, rw.map(x=>h('li',{},x))),
+      h('p',{}, `تم فتح المرحلة التالية: ${nx.icon} ${nx.name}`)),
+    actions:[{label:'العودة إلى الخريطة', fn:showMap}]
+  });
+}
+
+function skillSummary(){
+  return Object.keys(G.skills).map(n=>{
+    const s=G.skills[n]; const pct=Math.round(s.ok/s.total*100);
+    return {name:n, ok:s.ok, total:s.total, pct, level:SKILL_LEVEL(pct)};
+  });
+}
+function recommendation(score, sk){
+  const weak=sk.filter(s=>s.level==='يحتاج تعزيز').map(s=>s.name);
+  const w = weak.length ? weak.join('، ') : '';
+  if(score>=90) return 'أداء متميز. يُنصح بتكليف الطالب بإعداد خط زمني لخطوات قيام الاتحاد بوصفه نشاطًا إثرائيًا' + (w ? `، مع مراجعة: ${w}.` : '.');
+  if(score>=70) return 'أداء جيد. يحتاج الطالب إلى تعزيز بعض المهارات' + (w ? `: ${w}` : '') + '، مع مراجعة الدرس وقراءة الأدلة بتأنٍّ قبل الإجابة.';
+  return 'يحتاج الطالب إلى مراجعة الدرس وإعادة المحاولة' + (w ? ` مع التركيز على: ${w}` : '') + '، ويُنصح بقراءة النصوص والجداول بعناية قبل الإجابة.';
+}
+
+function finishGame(){
+  G.finished=true;
+  tick();
+  const sk=skillSummary();
+  const score=calcScore();
+  checkBadges();
+  G.result={
+    id:Date.now(), name:G.name, grade:G.grade, score,
+    firstOk:G.firstOk, total:totalChallenges(), wrong:G.wrong,
+    stages:G.stageDone.filter(Boolean).length, clues:G.clues.length,
+    durationSec:Math.round(G.playMs/1000), badges:G.badges.slice(),
+    skills:sk, rec:recommendation(score,sk),
+    date:new Date().toLocaleString('ar-AE')
+  };
+  const list=store.get(KEY_RES)||[];
+  list.push(G.result);
+  store.set(KEY_RES, list);
+  save();
+  showVictory();
+}
+
+function celebrate(){
+  const box=$('confetti'); box.innerHTML='';
+  const colors=['#ffd966','#d4a017','#2e7d5b','#2c7aa3','#b23a3a','#fff3b0'];
+  for(let i=0;i<70;i++){
+    box.append(h('span',{class:'cf', style:`left:${Math.random()*100}%;background:${colors[i%colors.length]};animation-duration:${2.5+Math.random()*2.5}s;animation-delay:${Math.random()*1.2}s`}));
+  }
+  setTimeout(()=>{ box.innerHTML=''; },6500);
+}
+function showVictory(){
+  showScreen('s-victory');
+  $('vText').textContent = `${G.name}، لقد اكتملت المغامرة بنتيجة ${G.result.score} من 100. الكنز ملكك!`;
+  const chest=$('chest'); chest.classList.remove('open');
+  setTimeout(()=>chest.classList.add('open'), 500);
+  SFX.win();
+  celebrate();
+}
+
+function showResults(){
+  if(!G || !G.result){ showMap(); return; }
+  const r=G.result;
+  showScreen('s-results');
+  $('rScore').textContent = r.score;
+  $('rRing').style.setProperty('--p', r.score);
+  $('rName').textContent = `${r.name} — ${gradeLabel(r.grade)}`;
+  const stats=[
+    ['النقاط', `${r.score} / 100`],
+    ['إجابات صحيحة من أول محاولة', `${r.firstOk} من ${r.total}`],
+    ['إجابات خاطئة', r.wrong],
+    ['المراحل المكتملة', `${r.stages} / 5`],
+    ['الأدلة المكتشفة', `${r.clues} / ${CLUES_TOTAL}`],
+    ['زمن الإنجاز', fmtDur(r.durationSec)]
+  ];
+  $('rStats').innerHTML='';
+  stats.forEach(([a,b])=>$('rStats').append(h('div',{class:'stat'}, a, h('b',{}, String(b)))));
+  $('rBadges').innerHTML='';
+  BADGES.forEach(b=>$('rBadges').append(h('div',{class:'badge '+(r.badges.includes(b.id)?'':'off')},
+    h('div',{style:'font-size:2rem'}, b.icon), h('b',{}, b.name), h('div',{class:'small-txt'}, b.desc))));
+  $('rSkills').innerHTML='';
+  r.skills.forEach(s=>$('rSkills').append(h('div',{class:'skill-row'},
+    h('span',{}, `${s.name} (${s.ok}/${s.total})`),
+    h('span',{class:'lv '+lvCls(s.level)}, `${s.level} • ${s.pct}%`))));
+  $('rRec').textContent = r.rec;
+}
+
+function showCert(){
+  if(!G || !G.result){ showMap(); return; }
+  $('cName').textContent = G.name;
+  $('cGrade').textContent = gradeLabel(G.grade);
+  $('cScore').textContent = `${G.result.score} / 100`;
+  $('cDate').textContent = new Date().toLocaleDateString('ar-AE',{year:'numeric',month:'long',day:'numeric'});
+  showScreen('s-cert');
+}
+
+function restartGame(){
+  if(!G) return;
+  if(!confirm('هل تريد إعادة اللعب من البداية؟ سيُحذف التقدم الحالي، وتبقى النتائج السابقة المحفوظة للمعلم.')) return;
+  G = newGame(G.name, G.grade);
+  save(); showMap();
+}
+
+/* ===================================================================
+   عاشرًا: لوحة المعلم
+   =================================================================== */
+function skillsOf(r, lvl){ return (r.skills||[]).filter(s=>s.level===lvl).map(s=>s.name).join('، '); }
+
+function renderTeacher(){
+  const list=store.get(KEY_RES)||[];
+  const q=($('tSearch').value||'').trim();
+  const rows=list.filter(r=>!q || String(r.name).includes(q)).slice().reverse();
+  const n=list.length;
+  const avg = n ? Math.round(list.reduce((a,r)=>a+r.score,0)/n) : 0;
+  const done = list.filter(r=>r.stages===5).length;
+  const avgDur = n ? Math.round(list.reduce((a,r)=>a+(r.durationSec||0),0)/n) : 0;
+  $('tStats').innerHTML='';
+  [['عدد الطلاب المسجلين', n],['متوسط النقاط', `${avg} / 100`],['أكملوا المغامرة', done],['متوسط زمن الإنجاز', fmtDur(avgDur)]]
+    .forEach(([a,b])=>$('tStats').append(h('div',{class:'stat'}, a, h('b',{}, String(b)))));
+  const tb=$('tBody'); tb.innerHTML='';
+  if(!rows.length){
+    tb.append(h('tr',{}, h('td',{colspan:'10', style:'text-align:center'}, 'لا توجد نتائج مطابقة بعد. ستظهر النتائج هنا عند إكمال الطلاب للمغامرة.')));
+    return;
+  }
+  rows.forEach(r=>{
+    tb.append(h('tr',{},
+      h('td',{}, r.name),
+      h('td',{}, gradeLabel(r.grade)),
+      h('td',{}, r.score),
+      h('td',{}, r.total ? Math.round(r.firstOk/r.total*100)+'%' : '—'),
+      h('td',{}, `${r.stages} / 5`),
+      h('td',{}, skillsOf(r,'متقن') || '—'),
+      h('td',{}, skillsOf(r,'يحتاج تعزيز') || '—'),
+      h('td',{}, fmtDur(r.durationSec)),
+      h('td',{}, r.rec),
+      h('td',{}, r.date)));
+  });
+}
+
+function exportCSV(){
+  const list=store.get(KEY_RES)||[];
+  if(!list.length){ toast('لا توجد نتائج لتصديرها'); return; }
+  const headers=['الطالب','الصف','النقاط من 100','إجابات صحيحة من أول محاولة','إجمالي التحديات','الإجابات الخاطئة','المراحل المكتملة','المهارات المتقنة','المهارات التي تحتاج تعزيزًا','زمن الإنجاز (ثانية)','التوصية','التاريخ'];
+  const lines=[headers].concat(list.map(r=>[
+    r.name, gradeLabel(r.grade), r.score, r.firstOk, r.total, r.wrong, `${r.stages} / 5`,
+    skillsOf(r,'متقن'), skillsOf(r,'يحتاج تعزيز'), r.durationSec, r.rec, r.date
+  ]));
+  const csv='\uFEFF' + lines.map(l=>l.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='lost-treasure-results.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('تم تصدير النتائج إلى ملف CSV');
+}
+
+function showTeacher(){
+  showScreen('s-teacher');
+  renderTeacher();
+}
+
+/* ===================================================================
+   الحادي عشر: الربط بالأزرار والأحداث
+   =================================================================== */
+function bind(id, fn){ $(id).addEventListener('click', fn); }
+
+// تهيئة قائمة الصفوف
+GRADES.forEach(g=>$('inGrade').append(h('option',{value:g.v}, g.t)));
+
+// الشاشة الرئيسية
+bind('btnStart',()=>{
+  SFX.click();
+  $('inName').value = G ? G.name : '';
+  $('inGrade').value = G ? G.grade : '';
+  $('setupErr').textContent='';
+  showScreen('s-setup');
+});
+bind('btnResume',()=>{
+  SFX.click();
+  if(loadGame()){ if(G.finished) showResults(); else showMap(); }
+  else { toast('لا توجد مغامرة محفوظة'); refreshStart(); }
+});
+bind('btnTeacher',()=>{ SFX.click(); showTeacher(); });
+
+// شاشة التسجيل
+bind('btnSetupBack',()=>{ showScreen('s-start'); refreshStart(); });
+bind('btnSetupNext',()=>{
+  const name=$('inName').value.trim();
+  const grade=$('inGrade').value;
+  const errs=[];
+  if(name.length<2) errs.push('الرجاء كتابة الاسم الكامل (حرفان على الأقل).');
+  if(!grade) errs.push('الرجاء اختيار الصف الدراسي.');
+  $('setupErr').textContent=errs.join(' ');
+  if(errs.length){ SFX.bad(); return; }
+  const old=store.get(KEY_SAVE);
+  if(old && old.G && !old.G.finished && G!==null && !confirm('لديك مغامرة محفوظة غير مكتملة. هل تريد بدء مغامرة جديدة؟ سيُحذف التقدم السابق.')) return;
+  G = newGame(name, grade);
+  save();
+  SFX.click();
+  showScreen('s-instr');
+});
+
+// التعليمات
+bind('btnInstrBack',()=>showScreen('s-setup'));
+bind('btnGo',()=>{ SFX.click(); showMap(); });
+
+// الخريطة
+bind('btnNext',()=>{
+  if(G.finished){ showResults(); return; }
+  onNodeClick(nextAvail());
+});
+bind('btnRestart',restartGame);
+bind('btnMapHud',()=>{ SFX.click(); showMap(); });
+
+// المرحلة
+bind('btnLeaveStage',()=>{ save(); SFX.click(); showMap(); });
+
+// الكنز والنتائج والشهادة
+bind('btnVResults',showResults);
+bind('btnVCert',showCert);
+bind('rCert',showCert);
+bind('rTeacher',showTeacher);
+bind('rReplay',restartGame);
+bind('rStart',()=>{ showScreen('s-start'); refreshStart(); });
+bind('btnPrint',()=>window.print());
+bind('btnCertBack',showResults);
+
+// لوحة المعلم
+$('tSearch').addEventListener('input',renderTeacher);
+bind('btnExport',exportCSV);
+bind('btnClearRes',()=>{
+  if(!confirm('هل أنت متأكد من مسح جميع النتائج المحفوظة على هذا الجهاز؟ لا يمكن التراجع عن ذلك.')) return;
+  store.del(KEY_RES); renderTeacher(); toast('تم مسح النتائج');
+});
+bind('btnTBack',()=>{ showScreen('s-start'); refreshStart(); });
+
+// الصوت
+document.querySelectorAll('.sndBtn').forEach(b=>b.addEventListener('click',()=>{
+  soundOn=!soundOn;
+  store.set(KEY_SOUND, soundOn);
+  updateSoundBtns();
+  if(soundOn) SFX.click();
+}));
+
+// بدء التشغيل
+updateSoundBtns();
+refreshStart();
+showScreen('s-start');
+</script>
+</body>
+</html>
+```
+
+---
+
+## طريقة التشغيل
+
+1. احفظ الكود في ملف باسم `index.html`.
+2. افتح الملف مباشرة في متصفح حديث (Chrome أو Edge أو Firefox أو Safari). لا يحتاج إلى تثبيت أو خادم.
+
+## طريقة التعديل
+
+- **تعديل الأسئلة:** عدّل مصفوفة `STAGES`. كل تحدٍّ يحتوي على:
+  - `type`: نوع التحدي (`mcq` للاختيار من متعدد وصح أو خطأ، و`drop` للسحب والمطابقة والتصنيف، و`order` للترتيب، و`map` لتحديد الموقع، و`code` لفك الشفرة).
+  - `q`: نص السؤال.
+  - `answer`: رقم الإجابة الصحيحة (يبدأ من 0) في `mcq`، أو الرمز في `code`.
+  - `explain`: التوضيح الذي يظهر بعد الإجابة الصحيحة.
+  - `tip`: التوضيح الذي يظهر بعد الخطأ.
+  - `hint`: التلميح.
+  - `clue: true`: لجعل التحدي دليلًا يُضاف إلى عداد الأدلة.
+  - `skill`: المهارة التي يقيسها التحدي، وتظهر في لوحة المعلم.
+- **تخصيص الصفوف:** أضف بنكًا خاصًا بكل صف، ويمكن أن تختلف محتويات المراحل حسب الوحدة المقررة.
+- **تغيير الشعار أو بيانات المعلم:** ابحث عن النصوص الثابتة في القسم الخاص بالشاشة الرئيسية وفي الشهادة.
+
+## ملاحظات مهمة
+
+- **مصدر المحتوى:** جميع الحقائق في الأسئلة مأخوذة من الوحدة المرفقة، مثل تاريخ تولي الحكم عام 1966م، وعرقوب السديرة عام 1968م، وجامعة الإمارات عام 1976م، وترتيب الدولة 35 في مؤشر التنمية البشرية لعام 2019م. لم أضف أي معلومة من خارج الكتاب.
+- **الخريطة:** الخريطة الموجودة في تحدي تحديد الموقع تخطيطية توضيحية للتدريب، وليست دقيقة جغرافيًا.
+- **الحفظ:** تُحفظ المغامرة والنتائج في `localStorage` على الجهاز نفسه. النتائج لا تُرسل تلقائيًا إلى المعلم، ويمكن تصديرها من لوحة المعلم بصيغة CSV.
+- **الطباعة:** تُطبع الشهادة على ورقة A4 عبر زر الطباعة، ويُفضل اختيار "حفظ كـ PDF" أو الطباعة المباشرة من المتصفح.
